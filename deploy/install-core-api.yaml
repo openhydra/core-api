@@ -1,0 +1,147 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    name: ai-education-studio
+  name: ai-education-studio
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ai-education-studio-admin
+  namespace: ai-education-studio
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ai-education-studio-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: ai-education-studio-admin
+  namespace: ai-education-studio
+
+---
+
+apiVersion: v1
+data:
+  config.yaml: |
+    auth:
+        keystone:
+            endpoint: http://keystone-api.caas.svc:5000
+            password: password
+            username: admin
+            domainId: default
+    coreApi:
+        port: "80"
+        disableAuth: true # remove it when auth is ready
+        releaseVersion: v1.0.0
+    rayLLM:
+        endpoint: http://rayservice-autoscaler-serve-svc.kuberay-system.svc:8000
+    xInference:
+        endpoint: http://service-web.xinference.svc:9997
+    rag:
+        endpoint: http://aes-ai-tutor.ai-education-studio.svc:7861
+        chatQuickStarts:
+          codeAssist:
+            - name: request-code-assist
+              title: 生成手写体代码
+              query: 如何实现一个基本的神经网络识别手写体的程序？
+            - name: request-code-assist
+              title: 生成服务代码
+              query: 如何用 python 写一个简单的 http server？
+          chatNoFiles:
+            - name: request-write-fifth-grade-math-tests
+              title: 生成小学五年级数学测试题
+              query: 帮我生成一份小学五年级水平的数学测试题，共10小题，包含选择题、填空题、应用题?
+            - name: request-ai-course
+              title: 课程推荐
+              query: 我想学习人工智能，有什么课程推荐？
+          chatWithFiles:
+            - name: cnn-knowledge
+              title: 介绍 CNN
+              query: 帮我介绍下 cnn？
+              files:
+              - cnn-知识.txt
+kind: ConfigMap
+metadata:
+  name: core-api-config
+  namespace: ai-education-studio
+
+---
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: core-api-server
+  namespace: ai-education-studio
+  labels:
+    app: core-api-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: core-api-server
+  template:
+    metadata:
+      labels:
+        app: core-api-server
+    spec:
+      serviceAccountName: ai-education-studio-admin
+      containers:
+      - name: core-api-container
+        image: registry.cn-shanghai.aliyuncs.com/aes/core-api-server:master
+        imagePullPolicy: IfNotPresent
+        command: ["core-api-server", "run","--config", "/etc/core-api/config.yaml"]
+        ports:
+        - containerPort: 80
+          name: core-api
+        volumeMounts:
+        - name: core-api-config
+          mountPath: /etc/core-api/config.yaml
+          subPath: config.yaml
+        - name: global-mnt
+          mountPath: /mnt
+          mountPropagation: Bidirectional
+        securityContext:
+          privileged: true
+      volumes:
+      - name: core-api-config
+        configMap:
+          name: core-api-config
+          items:
+          - key: config.yaml
+            path: config.yaml
+      - hostPath:
+          path: /mnt
+          type: Directory
+        name: global-mnt
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: core-api-server
+  name: core-api-server
+  namespace: ai-education-studio
+spec:
+  ports:
+  - name: port-1
+    port: 80
+    protocol: TCP
+    targetPort: 80
+    nodePort: 30002
+  selector:
+    app: core-api-server
+  sessionAffinity: None
+  type: NodePort

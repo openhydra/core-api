@@ -1,0 +1,6 @@
+.vscode
+cmd/core-api-server/core-api-server
+cmd/core-api-server/routes.raml
+*__debug_bin
+*__debug_bin*
+coverage.out
