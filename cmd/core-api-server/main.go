@@ -8,6 +8,7 @@ import (
 
 var version string
 
+// add comment for ci testing
 func main() {
 	cmd := app.NewCommand(version)
 	if err := cmd.Execute(); err != nil {
