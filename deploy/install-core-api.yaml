@@ -98,7 +98,7 @@ spec:
       serviceAccountName: ai-education-studio-admin
       containers:
       - name: core-api-container
-        image: registry.cn-shanghai.aliyuncs.com/aes/core-api-server:release-2.0
+        image: registry.cn-shanghai.aliyuncs.com/openhydra/core-api-server:release-2.0
         imagePullPolicy: IfNotPresent
         command: ["core-api-server", "run","--config", "/etc/core-api/config.yaml"]
         ports:
