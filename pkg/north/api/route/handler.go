@@ -2276,17 +2276,18 @@ func CreateUploadUsersHandler(config *config.Config) func(w http.ResponseWriter,
 			// 1 = password
 			// 2 = role
 			// 3 = group
+			// 4 = description
 			var recordIssue []string
 
-			// data secruity check
+			// data security check
 			// do not create a user if user set role to aes-admin
 			if record[2] == "aes-admin" {
 				coreApiLog.Logger.Warn("skip this user due to role is aes-admin is forbidden")
 				continue
 			}
 
-			if len(record) != 4 {
-				httpHelper.WriteCustomErrorAndLog(w, fmt.Sprintf("Invalid record format expected column to be 4 got %d", len(record)), http.StatusBadRequest, "", fmt.Errorf("invalid record format expected column to be 4 got %d", len(record)))
+			if len(record) != 5 {
+				httpHelper.WriteCustomErrorAndLog(w, fmt.Sprintf("Invalid record format expected column to be 5 got %d", len(record)), http.StatusBadRequest, "", fmt.Errorf("invalid record format expected column to be 5 got %d", len(record)))
 				return
 			}
 
@@ -2387,6 +2388,7 @@ func CreateUploadUsersHandler(config *config.Config) func(w http.ResponseWriter,
 							Id: groupId,
 						},
 					},
+					Description: record[4],
 				}, nil)
 				if err != nil {
 					if len(recordIssue) == 0 {
