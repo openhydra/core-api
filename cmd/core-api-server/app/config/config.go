@@ -7,16 +7,24 @@ import (
 )
 
 type Config struct {
-	AuthConfig    *AuthConfig    `json:"auth,omitempty" yaml:"auth,omitempty"`
-	KubeConfig    *KubeConfig    `json:"kube_config,omitempty" yaml:"kubeConfig,omitempty"`
-	CoreApiConfig *CoreApiConfig `json:"core_api,omitempty" yaml:"coreApi,omitempty"`
-	RayLLM        *RayLLM        `json:"ray_llm,omitempty" yaml:"rayLLM,omitempty"`
-	Rag           *Rag           `json:"rag,omitempty" yaml:"rag,omitempty"`
-	XInference    *XInference    `json:"x_inference,omitempty" yaml:"xInference,omitempty"`
+	AuthConfig       *AuthConfig       `json:"auth,omitempty" yaml:"auth,omitempty"`
+	KubeConfig       *KubeConfig       `json:"kube_config,omitempty" yaml:"kubeConfig,omitempty"`
+	KubeClientConfig *KubeClientConfig `json:"kube_client_config,omitempty" yaml:"kubeClientConfig,omitempty"`
+	CoreApiConfig    *CoreApiConfig    `json:"core_api,omitempty" yaml:"coreApi,omitempty"`
+	RayLLM           *RayLLM           `json:"ray_llm,omitempty" yaml:"rayLLM,omitempty"`
+	Rag              *Rag              `json:"rag,omitempty" yaml:"rag,omitempty"`
+	XInference       *XInference       `json:"x_inference,omitempty" yaml:"xInference,omitempty"`
+}
+
+type KubeClientConfig struct {
+	QPS   float32 `json:"qps,omitempty" yaml:"qps,omitempty"`
+	Burst int     `json:"burst,omitempty" yaml:"burst,omitempty"`
 }
 
 type KubeConfig struct {
 	RestConfig *rest.Config
+	QPS        float32 `json:"qps,omitempty" yaml:"qps,omitempty"`
+	Burst      int     `json:"burst,omitempty" yaml:"burst,omitempty"`
 }
 
 type CoreApiConfig struct {
@@ -73,6 +81,10 @@ func DefaultConfig() *Config {
 				TokenKeyInResponse: "X-Subject-Token",
 				TokenKeyInRequest:  "X-Auth-Token",
 			},
+		},
+		KubeConfig: &KubeConfig{
+			QPS:   100,
+			Burst: 200,
 		},
 		CoreApiConfig: &CoreApiConfig{
 			Port:           "8080",
