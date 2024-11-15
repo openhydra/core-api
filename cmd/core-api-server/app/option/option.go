@@ -54,7 +54,7 @@ func (opt *Option) GenerateConfig(loadKubeConfig bool) (*config.Config, error) {
 	}
 
 	if !opt.DoNotInitK8sInClusterConfig {
-		restConfig, err := BuildKubeConfig()
+		restConfig, err := BuildKubeConfig(serverConfig.KubeClientConfig)
 		if err != nil {
 			return nil, err
 		}
@@ -72,7 +72,7 @@ func CheckCoreApiConfig(config *config.Config) error {
 	return nil
 }
 
-func BuildKubeConfig() (*rest.Config, error) {
+func BuildKubeConfig(clientConfig *config.KubeClientConfig) (*rest.Config, error) {
 	// note for now we only support in-cluster config for following reasons:
 	// 1. we are running in k8s cluster
 	// 2. we are using service account to access k8s api server
@@ -81,6 +81,12 @@ func BuildKubeConfig() (*rest.Config, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return config, err
+	}
+
+	// set QPS and Burst
+	if clientConfig != nil {
+		config.QPS = clientConfig.QPS
+		config.Burst = clientConfig.Burst
 	}
 
 	// now we should read ca.crt for our purpose
