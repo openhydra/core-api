@@ -15,7 +15,7 @@ type IUserProvider interface {
 	GetUser(id string, options map[string]struct{}) (*core.CoreUser, error)
 	UpdateUser(user *core.CoreUser, options map[string]struct{}) error
 	DeleteUser(id string, options map[string]struct{}) error
-	CreateUser(user *core.CoreUser, options map[string]struct{}) error
+	CreateUser(user *core.CoreUser, options map[string]struct{}) (*core.CoreUser, error)
 	LoginUser(username, password string) (*core.CoreUser, error)
 }
 

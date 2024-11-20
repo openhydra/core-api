@@ -1767,11 +1767,11 @@ var _ = Describe("keystone user tests", func() {
 				Email:    "",
 				Password: "test4",
 			}
-			err := keystone.CreateUser(userToCreate, map[string]struct{}{})
+			_, err := keystone.CreateUser(userToCreate, map[string]struct{}{})
 			Expect(err).To(BeNil())
 			// test conflict user will be rejected
 			userToCreate.Name = "test1"
-			err = keystone.CreateUser(userToCreate, map[string]struct{}{})
+			_, err = keystone.CreateUser(userToCreate, map[string]struct{}{})
 			Expect(err).NotTo(BeNil())
 			Expect(userCreated.Name).To(Equal("test4"))
 		})
@@ -1788,7 +1788,7 @@ var _ = Describe("keystone user tests", func() {
 				Password: "test4",
 				Roles:    []core.CoreRole{{Id: "test4id"}},
 			}
-			err := keystone.CreateUser(userToCreate, map[string]struct{}{})
+			_, err := keystone.CreateUser(userToCreate, map[string]struct{}{})
 			Expect(err).NotTo(BeNil())
 			_, ok := err.(*customErr.NotFound)
 			Expect(ok).To(BeTrue())
@@ -1807,7 +1807,7 @@ var _ = Describe("keystone user tests", func() {
 				Password: "test4",
 				Groups:   []core.CoreGroup{{Id: "test4id"}},
 			}
-			err := keystone.CreateUser(userToCreate, map[string]struct{}{})
+			_, err := keystone.CreateUser(userToCreate, map[string]struct{}{})
 			Expect(err).NotTo(BeNil())
 			_, ok := err.(*customErr.NotFound)
 			Expect(ok).To(BeTrue())
@@ -1827,7 +1827,7 @@ var _ = Describe("keystone user tests", func() {
 				Roles:    []core.CoreRole{{Id: "test1id"}},
 				Groups:   []core.CoreGroup{{Id: "test1id"}},
 			}
-			err := keystone.CreateUser(userToCreate, map[string]struct{}{})
+			_, err := keystone.CreateUser(userToCreate, map[string]struct{}{})
 			Expect(err).To(BeNil())
 			Expect(userCreated.Name).To(Equal("test4"))
 			Expect(userCreated.CoreUser.Roles[0].Id).To(Equal("test1id"))

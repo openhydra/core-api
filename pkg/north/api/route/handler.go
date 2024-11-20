@@ -1091,7 +1091,7 @@ func CreateCreateUserHandler(config *config.Config) func(w http.ResponseWriter, 
 			return
 		}
 
-		err = userProvider.CreateUser(userPost, nil)
+		retUserPost, err := userProvider.CreateUser(userPost, nil)
 		if err != nil {
 			// check error is not found error
 			if _, ok := err.(*customErr.NotFound); ok {
@@ -1102,7 +1102,7 @@ func CreateCreateUserHandler(config *config.Config) func(w http.ResponseWriter, 
 			return
 		}
 
-		httpHelper.WriteResponseEntity(w, userPost)
+		httpHelper.WriteResponseEntity(w, retUserPost)
 	}
 }
 
@@ -2375,7 +2375,7 @@ func CreateUploadUsersHandler(config *config.Config) func(w http.ResponseWriter,
 				// create user then
 				roleId := flatRoles[record[2]].Id
 				groupId := flatGroup[record[3]].Id
-				err := userProvider.CreateUser(&coreUserV1.CoreUser{
+				_, err := userProvider.CreateUser(&coreUserV1.CoreUser{
 					Name:     record[0],
 					Password: record[1],
 					Roles: []coreUserV1.CoreRole{

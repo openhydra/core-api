@@ -207,20 +207,20 @@ func (up *UserProvider) DeleteUser(id string, options map[string]struct{}) error
 }
 
 // create user
-func (up *UserProvider) CreateUser(user *core.CoreUser, options map[string]struct{}) error {
+func (up *UserProvider) CreateUser(user *core.CoreUser, options map[string]struct{}) (*core.CoreUser, error) {
 
 	// get role map
 	mapRoles, err := getRoleMap(up.Config, up.token, options)
 	if err != nil {
 		coreApiLog.Logger.Error("Failed to get role map", "error", err)
-		return err
+		return nil, err
 	}
 
 	// check if all roles are valid
 	for _, role := range user.Roles {
 		if _, found := mapRoles[role.Id]; !found {
 			coreApiLog.Logger.Error("Role not found", "role", role.Id, "user", user.Name)
-			return customErr.NewNotFound(http.StatusNotFound, fmt.Sprintf("Role %s not found", role.Id))
+			return nil, customErr.NewNotFound(http.StatusNotFound, fmt.Sprintf("Role %s not found", role.Id))
 		}
 	}
 
@@ -228,14 +228,14 @@ func (up *UserProvider) CreateUser(user *core.CoreUser, options map[string]struc
 	mapGroups, err := getGroupMap(up.Config, up.token, options)
 	if err != nil {
 		coreApiLog.Logger.Error("Failed to get group map", "error", err)
-		return err
+		return nil, err
 	}
 
 	// check if all groups are valid
 	for _, group := range user.Groups {
 		if _, found := mapGroups[group.Id]; !found {
 			coreApiLog.Logger.Error("Group not found", "group", group.Id, "user", user.Name)
-			return customErr.NewNotFound(http.StatusNotFound, fmt.Sprintf("Group %s not found", group.Id))
+			return nil, customErr.NewNotFound(http.StatusNotFound, fmt.Sprintf("Group %s not found", group.Id))
 		}
 	}
 
@@ -257,16 +257,35 @@ func (up *UserProvider) CreateUser(user *core.CoreUser, options map[string]struc
 	}{User: userPost})
 	if err != nil {
 		coreApiLog.Logger.Error("Failed to marshal user", "error", err)
-		return err
+		return nil, err
 	}
 
-	_, _, _, err = commentRequestAutoRenewToken("/v3/users", http.MethodPost, up.Config.AuthConfig.Keystone, up.getToken, up.setToken, postBody)
+	retBodyBytes, _, retCode, err := commentRequestAutoRenewToken("/v3/users", http.MethodPost, up.Config.AuthConfig.Keystone, up.getToken, up.setToken, postBody)
 	if err != nil {
 		coreApiLog.Logger.Error("Failed to create user", "error", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	if retCode != http.StatusCreated && retCode != http.StatusOK {
+		coreApiLog.Logger.Error("Failed to create user", "code", retCode, "body", string(retBodyBytes))
+		return nil, fmt.Errorf("failed to create user")
+	}
+
+	var userContainer struct {
+		User *User `json:"user"`
+	}
+
+	err = json.Unmarshal(retBodyBytes, &userContainer)
+	if err != nil {
+		coreApiLog.Logger.Error("Failed to unmarshal user", "error", err)
+		return nil, err
+	}
+
+	fmt.Println(userContainer)
+
+	user.Id = userContainer.User.ID
+
+	return user, nil
 }
 
 func (up *UserProvider) getToken() (string, error) {
