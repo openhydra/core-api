@@ -48,6 +48,8 @@ type (
 		// gpu resource keys that predefine for open-hydra-server to discover gpu resource
 		GpuResourceKeys         []string            `json:"gpu_resource_keys,omitempty" yaml:"gpuResourceKeys,omitempty"`
 		ServerIP                string              `json:"server_ip" yaml:"serverIP"`
+		EnableJupyterLabBaseURL bool                `json:"enable_jupyter_lab_base_url" yaml:"enableJupyterLabBaseURL"`
+		ApplyPortNameForIngress map[string]string   `json:"apply_port_name_for_ingress,omitempty" yaml:"applyPortNameForIngress,omitempty"`
 		MySqlConfig             *MySqlConfig        `json:"mysql_config,omitempty" yaml:"mysqlConfig,omitempty"`
 		EtcdConfig              *EtcdConfig         `json:"etcd_config,omitempty" yaml:"etcdConfig,omitempty"`
 		DBType                  string              `json:"db_type,omitempty" yaml:"dbType,omitempty"`
@@ -58,6 +60,7 @@ type (
 		AuthDelegateConfig      *AuthDelegateConfig `json:"auth_delegate_config,omitempty" yaml:"authDelegateConfig,omitempty"`
 		MaximumPortsPerSandbox  uint8               `json:"maximum_ports_per_sandbox,omitempty" yaml:"maximumPortsPerSandbox,omitempty"`
 		WorkspacePath           string              `json:"workspace_path,omitempty" yaml:"workspacePath,omitempty"`
+		KubeClientConfig        *KubeClientConfig   `json:"kube_client_config,omitempty" yaml:"kubeClientConfig,omitempty"`
 	}
 )
 
@@ -83,6 +86,8 @@ func DefaultConfig() *OpenHydraServerConfig {
 		MemoryOverCommitRate:          1, // no over commit for memory by default,set to 2 meaning memory request will be divide by 2
 		MaximumPortsPerSandbox:        3,
 		WorkspacePath:                 "/mnt/workspace",
+		KubeClientConfig:              &KubeClientConfig{QPS: 100, Burst: 200},
+		ApplyPortNameForIngress:       map[string]string{"jupyter-lab": "lab"},
 	}
 }
 
@@ -117,6 +122,11 @@ type KeystoneConfig struct {
 	ProjectId          string `json:"project_id,omitempty" yaml:"projectId,omitempty"`
 	TokenKeyInResponse string `json:"token_key_in_response,omitempty" yaml:"tokenKeyInResponse,omitempty"`
 	TokenKeyInRequest  string `json:"token_key_in_request,omitempty" yaml:"tokenKeyInRequest,omitempty"`
+}
+
+type KubeClientConfig struct {
+	QPS   float32 `json:"qps,omitempty" yaml:"qps,omitempty"`
+	Burst int     `json:"burst,omitempty" yaml:"burst,omitempty"`
 }
 
 func DefaultEtcdConfig() *EtcdConfig {

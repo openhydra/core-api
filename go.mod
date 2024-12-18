@@ -6,7 +6,6 @@ require (
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/emicklei/go-restful v2.16.0+incompatible
 	github.com/go-chi/chi/v5 v5.1.0
-	github.com/hyperboloide/lk v0.0.0-20230325114855-ce3fecd34798
 	github.com/onsi/ginkgo/v2 v2.19.0
 	github.com/onsi/gomega v1.33.1
 	github.com/spf13/cobra v1.8.1
