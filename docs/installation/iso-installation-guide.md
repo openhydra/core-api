@@ -135,7 +135,11 @@
 
 ![installation](../images/installation-22.jpeg)
 
-## 查看安装输出日志
+* 然后程序会自动开始安装 openhydra-2.0 整个过程根据磁盘的 io 的速度会有不太同， nvme 磁盘一般在 45 分钟以为， 其他都在 1 个小时左右
+
+## 确认是否还在安装
+
+通过运行命令 `journalctl -u openhydra -f` 来确认程序是否有错误日志
 
 ```bash
 $ journalctl -u openhydra -f
